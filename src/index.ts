@@ -1,5 +1,11 @@
-import http from 'node:http';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
-const port = Number(process.env.PORT || 8000);
+import { version } from '../package.json';
+import { schema as searchImageSchema, handler as searchImageHandler } from '~/tools/search_image';
 
-http.createServer().listen(port, '0.0.0.0', () => console.log(`Server is running on port ${port}`));
+const server = new McpServer({ name: 'Google images search', version });
+
+server.tool('search_image', searchImageSchema, searchImageHandler);
+
+server.connect(new StdioServerTransport());

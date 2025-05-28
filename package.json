@@ -8,7 +8,10 @@
     "lint:fix": "eslint . --fix",
     "tsc": "tsc -noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "~1.12",
+    "zod": "~3.25"
+  },
   "devDependencies": {
     "@eslint/js": "~9.27",
     "@types/node": "^22",
