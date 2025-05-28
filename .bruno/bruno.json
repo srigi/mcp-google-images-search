@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "MPC-google-images-search",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

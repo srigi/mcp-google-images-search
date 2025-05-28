@@ -1,0 +1,23 @@
+meta {
+  name: imagesearch
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{apiBaseUrl}}?key={{apiKey}}&cx={{searchEngineID}}&searchType=image&q=PC battlestation&num=4
+  body: none
+  auth: none
+}
+
+params:query {
+  key: {{apiKey}}
+  cx: {{searchEngineID}}
+  searchType: image
+  q: PC battlestation
+  num: 4
+}
+
+headers {
+  Content-Type: application/json
+}
