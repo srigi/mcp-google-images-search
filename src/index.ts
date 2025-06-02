@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import winston, { transports } from 'winston';
 
 import { version } from '../package.json';
-import { schema as searchImageSchema, handler as searchImageHandler } from '~/tools/search_image';
+import { schema as searchImageSchema, getHandler as getSearchImageHandler } from '~/tools/search_image';
 
 const logger = winston.createLogger({
   level: 'info',
@@ -14,6 +14,6 @@ const logger = winston.createLogger({
 });
 const server = new McpServer({ name: 'Google images search', version });
 
-server.tool('search_image', searchImageSchema, searchImageHandler);
+server.tool('search_image', searchImageSchema, getSearchImageHandler(logger));
 
 server.connect(new StdioServerTransport()).then(() => logger.info('server connected'));
