@@ -2,16 +2,20 @@
   "name": "@srigi/mcp-google-images-search",
   "description": "MCP server for searching images with Google",
   "license": "MIT",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/srigi/mcp-google-images-search.git"
   },
   "bin": {
-    "mcp-google-images-search": "dist/index.js"
+    "mcp-google-images-search": "dist/mcp.js"
   },
+  "files": [
+    "dist/mcp.js",
+    "src"
+  ],
   "scripts": {
-    "build": "ncc build src/index.ts --minify --out dist/",
+    "build": "ncc build src/index.ts --minify --out dist/ && echo '#!/usr/bin/env node' | cat - dist/index.js > dist/mcp.js && chmod +x dist/mcp.js",
     "dev": "chokidar 'src/**/*.ts' -c 'tsc && tsc-alias'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
