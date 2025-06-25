@@ -4,9 +4,9 @@ import { env } from '~/env.js';
 
 export interface SearchOptions {
   query: string;
-  count: number;
-  startIndex: number;
-  safe: 'off' | 'medium' | 'high';
+  count?: number;
+  startIndex?: number;
+  safe?: 'off' | 'medium' | 'high';
 }
 
 export interface SearchResult {
