@@ -15,6 +15,6 @@
     "strict": true,
     "target": "ESNext"
   },
-  "include": ["**/*.ts"],
-  "exclude": ["my_resources", "node_modules"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["my_resources", "node_modules", "src/**/*.test.ts"]
 }
