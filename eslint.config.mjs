@@ -5,7 +5,7 @@ import prettierConfig from 'eslint-config-prettier'; // We still need this to ap
 
 export default tseslint.config(
   {
-    ignores: ['.data/', '.out/', 'node_modules/', 'prisma/client/'],
+    ignores: ['.bruno/', '.roo/', 'logs', 'my_resources', 'node_modules/', 'src/**/*.js'],
   },
 
   eslint.configs.recommended,
