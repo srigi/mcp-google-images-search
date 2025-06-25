@@ -101,10 +101,9 @@ export class GoogleSearchError extends Error {
 }
 
 /**
- * Performs a Google Custom Search API request for images
+ * Builds the Google Custom Search API URL with the provided search options
  */
-export async function searchImages({ query, count = 4, startIndex = 1, safe = 'off' }: SearchOptions): Promise<SearchResult> {
-  // build the search query URL
+export function buildSearchUrl({ query, count = 4, startIndex = 1, safe = 'off' }: SearchOptions): string {
   const url = new URL('https://www.googleapis.com/customsearch/v1');
   url.searchParams.append('cx', env.SEARCH_ENGINE_ID);
   url.searchParams.append('key', env.API_KEY);
@@ -114,7 +113,16 @@ export async function searchImages({ query, count = 4, startIndex = 1, safe = 'o
   url.searchParams.append('searchType', 'image');
   url.searchParams.append('startIndex', startIndex.toString());
 
-  const response = await fetch(url.toString());
+  return url.toString();
+}
+
+/**
+ * Performs a Google Custom Search API request for images
+ */
+export async function searchImages({ query, count = 4, startIndex = 1, safe = 'off' }: SearchOptions): Promise<SearchResult> {
+  const url = buildSearchUrl({ query, count, startIndex, safe });
+
+  const response = await fetch(url);
   if (!response.ok) {
     throw new GoogleSearchError(`Google Search API request failed: ${response.statusText}`, response.status, response.statusText);
   }
