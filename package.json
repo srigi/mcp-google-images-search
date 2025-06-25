@@ -1,13 +1,23 @@
 {
   "name": "@srigi/mcp-google-images-search",
-  "version": "0.0.1",
+  "description": "MCP server for searching images with Google",
+  "license": "MIT",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srigi/mcp-google-images-search.git"
+  },
+  "bin": {
+    "mcp-google-images-search": "dist/index.js"
+  },
   "scripts": {
-    "build": "tsc && tsc-alias",
+    "build": "ncc build src/index.ts --minify --out dist/",
     "dev": "chokidar 'src/**/*.ts' -c 'tsc && tsc-alias'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "tsc": "tsc -noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "~1.13",
@@ -17,6 +27,7 @@
   "devDependencies": {
     "@eslint/js": "~9.29",
     "@types/node": "^24",
+    "@vercel/ncc": "~0.38",
     "chokidar-cli": "~3.0",
     "eslint": "~9.29",
     "eslint-config-prettier": "~10.1",
