@@ -119,7 +119,7 @@ export function buildSearchUrl({ query, count = 4, startIndex = 1, safe = 'off' 
 /**
  * Performs a Google Custom Search API request for images
  */
-export async function searchImages({ query, count = 4, startIndex = 1, safe = 'off' }: SearchOptions): Promise<SearchResult> {
+export async function searchImages({ query, count = 2, startIndex = 1, safe = 'off' }: SearchOptions): Promise<SearchResult> {
   const url = buildSearchUrl({ query, count, startIndex, safe });
 
   const response = await fetch(url);

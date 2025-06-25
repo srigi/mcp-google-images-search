@@ -1,37 +1,16 @@
 # Google Images Search Tool
 
-A simplified, type-safe Google Images search tool for the MCP (Model Context Protocol) server.
+MCP tool for searching Google Images using the Custom Search API.
 
-## Overview
+## Usage
 
-This tool provides a complete solution for searching Google Images with:
-
-- **Zod validation** for API response validation
-- **TypeScript types** for full type safety
-- **Utility functions** for easy integration
-- **Error handling** with custom error types
-- **Pagination support** for browsing results
-
-## File Structure
-
-```
-src/tools/search_image/
-├── index.ts          # Main tool export (MCP tool handler)
-├── utils.ts          # Core utility functions with inline types
-└── README.md         # This documentation
-```
-
-## Quick Start
-
-### Using the MCP Tool
-
-The tool is automatically registered with the MCP server and can be called with:
+### MCP Tool Call
 
 ```json
 {
   "tool": "search_image",
   "arguments": {
-    "q": "PC battlestation",
+    "query": "mechanical keyboard",
     "count": 4,
     "startIndex": 1,
     "safe": "off"
@@ -39,127 +18,138 @@ The tool is automatically registered with the MCP server and can be called with:
 }
 ```
 
-### Using the Utility Functions
+### Direct Function Call
 
 ```typescript
-import { searchImages } from '~/tools/search_image/utils.js';
+import { searchImages } from './utils.js';
 
-// Advanced search
 const result = await searchImages({
   query: 'gaming setup',
   count: 6,
-  startIndex: 1,
   safe: 'medium',
 });
 ```
 
-## API Reference
+## Parameters
 
-### Tool Parameters
+| Parameter    | Type   | Required | Default | Description                          |
+| ------------ | ------ | -------- | ------- | ------------------------------------ |
+| `query`      | string | ✓        | -       | Search query                         |
+| `count`      | number | -        | 2       | Results to return (1-10)             |
+| `startIndex` | number | -        | 1       | Pagination start index               |
+| `safe`       | enum   | -        | 'off'   | Safe search: 'off', 'medium', 'high' |
 
-- `q` (string, required): Search query for images
-- `count` (number, optional): Number of results to return (1-10, default: 4)
-- `startIndex` (number, optional): Starting index for pagination (default: 1)
-- `safe` (enum, optional): Safe search setting ('off' | 'medium' | 'high', default: 'off')
+## Key Points
 
-### Utility Functions
+- **Rate Limits**: Google Custom Search API has daily quotas
+- **Pagination**: Use `nextPageIdx` from results for next page
+- **Image Links**: Direct links may expire; use `contextLink` for source page
+- **Error Handling**: Throws `GoogleSearchError` for API failures
 
-#### `searchImages(options: SearchOptions): Promise<SearchResult>`
+## Environment Setup
 
-Search function with full parameter control.
+Required environment variables:
 
-### Types
+```bash
+API_KEY=your_google_api_key
+SEARCH_ENGINE_ID=your_custom_search_engine_id
+```
 
-#### `SearchResult`
+## API Response Validation
 
-```typescript
-interface SearchResult {
-  items: SearchItem[]; // Array of search results
-  previousPageIdx?: number; // Start index for previous page
-  nextPageIdx?: number; // Start index for next page
-  totalResults: number; // Total number of results available
-  searchTerms: string; // The actual search terms used
+The tool uses Zod schema validation to ensure type safety and data integrity from Google's API response.
+
+### Raw Google API Response Example
+
+```json
+{
+  "kind": "customsearch#search",
+  "queries": {
+    "request": [
+      {
+        "totalResults": "1240000",
+        "searchTerms": "mechanical keyboard",
+        "count": 2,
+        "startIndex": 1,
+        "safe": "off"
+      }
+    ],
+    "nextPage": [
+      {
+        "totalResults": "1240000",
+        "searchTerms": "mechanical keyboard",
+        "count": 2,
+        "startIndex": 3,
+        "safe": "off"
+      }
+    ]
+  },
+  "items": [
+    {
+      "title": "Best Mechanical Keyboards 2024",
+      "htmlTitle": "Best <b>Mechanical Keyboards</b> 2024",
+      "link": "https://example.com/image.jpg",
+      "displayLink": "example.com",
+      "mime": "image/jpeg",
+      "image": {
+        "contextLink": "https://example.com/article",
+        "height": 800,
+        "width": 1200,
+        "byteSize": 156789,
+        "thumbnailLink": "https://encrypted-tbn0.gstatic.com/...",
+        "thumbnailHeight": 150,
+        "thumbnailWidth": 225
+      }
+    }
+  ]
 }
 ```
 
-#### `SearchItem`
+### Processed Tool Response
 
-```typescript
-interface SearchItem {
-  title: string; // Image title
-  htmlTitle: string; // HTML-formatted title
-  link: string; // Direct link to the image
-  displayLink: string; // Display URL of the source site
-  mime: string; // MIME type
-  image: Image; // Image metadata
+The validated response is transformed into a structured format:
+
+```json
+{
+  "summary": {
+    "query": "mechanical keyboard",
+    "totalResults": 1240000,
+    "itemsReturned": 2,
+    "pagination": {
+      "nextPageStartIndex": 3
+    }
+  },
+  "items": [
+    {
+      "index": 1,
+      "title": "Best Mechanical Keyboards 2024",
+      "link": "https://example.com/image.jpg",
+      "displayLink": "example.com",
+      "mimeType": "image/jpeg",
+      "image": {
+        "contextLink": "https://example.com/article",
+        "dimensions": "1200x800",
+        "size": "153KB",
+        "thumbnail": {
+          "link": "https://encrypted-tbn0.gstatic.com/...",
+          "dimensions": "225x150"
+        }
+      }
+    }
+  ]
 }
 ```
 
-#### `Image`
+### Validation Benefits
 
-```typescript
-interface Image {
-  contextLink: string; // Link to the page containing the image
-  height: number; // Image height in pixels
-  width: number; // Image width in pixels
-  byteSize: number; // Image file size in bytes
-  thumbnailLink: string; // Link to thumbnail version
-  thumbnailHeight: number; // Thumbnail height
-  thumbnailWidth: number; // Thumbnail width
-}
-```
+- **Type Safety**: Ensures all expected fields are present and correctly typed
+- **Error Handling**: Catches malformed responses before processing
+- **Data Transformation**: Converts raw API data into developer-friendly format
+- **Pagination Support**: Extracts pagination indices for seamless browsing
 
-## Error Handling
+## Common Issues
 
-The tool uses a custom `GoogleSearchError` class for API-related errors:
-
-```typescript
-try {
-  const result = await searchImages({ query: 'test' });
-} catch (error) {
-  if (error instanceof GoogleSearchError) {
-    console.error(`API Error: ${error.message}`);
-    console.error(`Status: ${error.status} ${error.statusText}`);
-  }
-}
-```
-
-## Pagination
-
-Use the `previousPageIdx` and `nextPageIdx` values for pagination:
-
-```typescript
-// Get first page
-const page1 = await searchImages({
-  query: 'mechanical keyboard',
-  count: 4,
-  startIndex: 1,
-});
-
-// Get next page
-if (page1.nextPageIdx) {
-  const page2 = await searchImages({
-    query: 'mechanical keyboard',
-    count: 4,
-    startIndex: page1.nextPageIdx,
-  });
-}
-```
-
-## Environment Variables
-
-The tool requires these environment variables:
-
-- `API_KEY`: Google API Key
-- `SEARCH_ENGINE_ID`: Google Custom Search Engine ID
-
-These are validated using Zod in `~/env.ts`.
-
-## Examples
-
-See `examples.ts` for complete usage examples including:
-
-- Basic search queries
-- Advanced search with options
-- Pagination handling
-- Error handling patterns
+- **403 Forbidden**: Check API key and quotas
+- **Invalid results**: Ensure Custom Search Engine has image search enabled
+- **Empty results**: Try broader search terms or different safe search settings
+- **Validation Errors**: Raw API response doesn't match expected schema (rare)
