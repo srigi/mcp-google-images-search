@@ -6,9 +6,9 @@ With help of [Is the Google images API still available?](https://old.reddit.com/
 
 ## Requirements
 
+- Node.js v20+
 - [direnv](https://direnv.net/#getting-started) (for development)
-- Node.js v20
-- PNPM v10
+- PNPM v10 (for development)
 
 ## Getting started
 
@@ -36,10 +36,8 @@ With help of [Is the Google images API still available?](https://old.reddit.com/
    ```json
    "mcpServers": {
      "googleImagesSearch": {
-       "command": "node",
-       "args": [
-         "/Path/to/project/folder/src/index.js"
-       ],
+       "command": "npx",
+       "args": ["-y", "@srigi/mcp-google-images-search"],
        "env": {
          "API_KEY": "..."
          "SEARCH_ENGINE_ID": "...",
@@ -108,3 +106,19 @@ Download and save images from URLs to your local project directory.
 - Content type validation (images only)
 - File size limits (max 10MB)
 - Supports JPEG, PNG, GIF, WebP, SVG, BMP, TIFF, AVIF
+
+## TODO
+
+1. splitting the Readme to use/development parts
+2. open GH issue for image support in the chat history:
+   - Augment
+   - Claude (desktop)
+   - Cursor
+   - RooCode
+   - WindSurf
+
+3. allow specifying of the output file in the chat
+4. configurable logging severity
+5. log directory in user profile folder (AppData\Roaming, Library/Application Support) or configurable
+6. refactor try/catch to [neverthrow](https://github.com/supermacro/neverthrow)
+7. image fetch timeout & retry
