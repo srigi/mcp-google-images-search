@@ -28,7 +28,8 @@
   ],
   "scripts": {
     "build": "ncc build src/index.ts --minify --out dist/ && echo '#!/usr/bin/env node' | cat - dist/index.js > dist/cli.js && chmod +x dist/cli.js",
-    "dev": "chokidar 'src/**/*.ts' -c 'tsc && tsc-alias'",
+    "build:tsc": "tsc && tsc-alias",
+    "dev": "pnpm build:tsc && chokidar 'src/**/*.ts' -c 'tsc && tsc-alias'",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "tsc": "tsc -noEmit",
