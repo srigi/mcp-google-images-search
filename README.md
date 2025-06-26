@@ -109,16 +109,18 @@ Download and save images from URLs to your local project directory.
 
 ## TODO
 
-1. splitting the Readme to use/development parts
-2. open GH issue for image support in the chat history:
-   - Augment
-   - Claude (desktop)
-   - Cursor
-   - RooCode
-   - WindSurf
+- splitting the Readme to use/development parts
+- add indexes to the results
+- open GH issue for image support in the chat history:
+  - Augment
+  - Claude (desktop)
+  - Copilot
+  - Cursor
+  - RooCode
+  - Zed
 
-3. allow specifying of the output file in the chat
-4. configurable logging severity
-5. log directory in user profile folder (AppData\Roaming, Library/Application Support) or configurable
-6. refactor try/catch to [neverthrow](https://github.com/supermacro/neverthrow)
-7. image fetch timeout & retry
+- allow specifying of the output file in the chat
+- configurable logging severity
+- log directory in user profile folder (AppData\Roaming, Library/Application Support) or configurable
+- refactor try/catch to [neverthrow](https://github.com/supermacro/neverthrow)
+- image fetch timeout & retry
