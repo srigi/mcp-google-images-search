@@ -3,6 +3,8 @@ import { basename, extname, resolve } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import type { Logger } from 'winston';
 
+import { tryCatch } from '~/utils/tryCatch.js';
+
 const ALLOWED_IMAGE_TYPES = new Set([
   'image/jpeg',
   'image/jpg',
@@ -16,7 +18,7 @@ const ALLOWED_IMAGE_TYPES = new Set([
 ]);
 const USER_AGENT = 'Mozilla/5.0 (compatible; MCP-GoogleImagesSearch/1.0)';
 
-export interface DownloadResult {
+export interface FetchResult {
   filePersistPath: string;
   mimeType: string;
   size: number;
@@ -73,71 +75,71 @@ function getFilename(url: string, mimeType: string): string {
 
 export function getUtils(logger: Logger) {
   return {
-    // validates that the target path is within project bounds, and returns the full path of the directory where the file should be saved
     async prepareTargetPath(workspacePath: string, targetPath: string): Promise<string> {
+      logger.info('[persist_image] utils/prepareTargetPath()', { workspacePath, targetPath });
+
+      // validates that the target path is within project bounds, and returns the full path of the directory where the file should be saved
       if (targetPath.startsWith('..')) {
         throw new PersistImageError('Target path must be within the project directory', 'INVALID_PATH');
       }
 
       const fullTargetPath = resolve(workspacePath, targetPath);
+      const [fsAccessErr] = await tryCatch(fs.access(fullTargetPath));
+      logger.info('[persist_image] utils/prepareTargetPath() resolve & fs.access', { fullTargetPath, fsAccessErr });
 
-      try {
-        await fs.access(fullTargetPath);
-      } catch (err) {
-        logger.info('prepareTargetPath(), fs.access().fail', err);
-
-        try {
-          await fs.mkdir(fullTargetPath, { recursive: true });
-        } catch (err) {
-          throw new PersistImageError(
-            `Failed to create directory: ${err instanceof Error ? err.message : 'Unknown error'}`,
-            'DIRECTORY_CREATE_FAILED',
-          );
-        }
+      if (fsAccessErr == null) {
+        logger.info('[persist_image] utils/prepareTargetPath() ret A');
+        return fullTargetPath;
       }
 
-      return fullTargetPath;
+      const [fsMkdirErr] = await tryCatch(fs.mkdir(fullTargetPath, { recursive: true }));
+      logger.info('[persist_image] utils/prepareTargetPath() fs.mkdir', { fsMkdirErr });
+
+      if (fsMkdirErr == null) {
+        logger.info('[persist_image] utils/prepareTargetPath() ret B');
+        return fullTargetPath;
+      }
+
+      throw new PersistImageError(`Failed to create directory: ${fsAccessErr.message}`, 'DIRECTORY_CREATE_FAILED');
     },
 
-    async fetchImage(url: string, fullTargetPath: string): Promise<DownloadResult> {
-      let response: Response;
-      try {
-        response = await fetch(url, {
-          headers: { 'User-Agent': USER_AGENT },
-        });
-      } catch (err) {
-        throw new PersistImageError(`Failed to fetch image: ${err instanceof Error ? err.message : 'Network error'}`, 'FETCH_FAILED');
-      }
-      logger.info('persist_image/fetchImage()', { response });
+    async fetchImage(url: string, fullTargetPath: string): Promise<FetchResult> {
+      logger.info('[persist_image] utils/fetchImage()', { url, fullTargetPath });
 
+      const [fetchErr, response] = await tryCatch(fetch(url, { headers: { 'User-Agent': USER_AGENT } }));
+      logger.info('[persist_image] utils/fetchImage() response', { fetchErr, response });
+
+      if (fetchErr != null) {
+        throw new PersistImageError(`Failed to fetch image: ${fetchErr.message}`, 'FETCH_FAILED');
+      }
       if (!response.ok) {
         throw new PersistImageError(`HTTP error ${response.status}: ${response.statusText}`, 'HTTP_ERROR');
       }
-      if (!response.body) {
+      if (response.body == null) {
         throw new PersistImageError('No response body received', 'NO_RESPONSE_BODY');
       }
 
       const contentType = response.headers.get('content-type') || '';
-
       if (!ALLOWED_IMAGE_TYPES.has(contentType)) {
         throw new PersistImageError(`Invalid content type: ${contentType}. Only image files are allowed.`, 'INVALID_CONTENT_TYPE');
       }
 
       const fileName = getFilename(url, contentType);
       const filePersistPath = resolve(fullTargetPath, fileName);
+      const writeStream = createWriteStream(filePersistPath);
+      logger.info('[persist_image] utils/fetchImage() fileName', { fileName, filePersistPath, writeStream });
 
-      try {
-        const writeStream = createWriteStream(filePersistPath);
-        await pipeline(response.body, writeStream);
-      } catch (err) {
-        throw new PersistImageError(`Failed to save file: ${err instanceof Error ? err.message : 'Unknown error'}`, 'SAVE_FAILED');
+      const [pipelineErr] = await tryCatch(pipeline(response.body, writeStream));
+      logger.info('[persist_image] utils/fetchImage() pipeline', { pipelineErr });
+
+      if (pipelineErr != null) {
+        throw new PersistImageError(`Failed to save file: ${pipelineErr.message}`, 'SAVE_FAILED');
       }
 
-      let fileStats;
-      try {
-        fileStats = await fs.stat(filePersistPath);
-      } catch (err) {
-        throw new PersistImageError(`Failed to get file stats: ${err instanceof Error ? err.message : 'Unknown error'}`, 'STAT_FAILED');
+      const [fsStatErr, fileStats] = await tryCatch(fs.stat(filePersistPath));
+      logger.info('[persist_image] utils/fetchImage() fs.stat', { fsStatErr, fileStats });
+      if (fsStatErr != null) {
+        throw new PersistImageError(`Failed to get file stats: ${fsStatErr.message}`, 'STAT_FAILED');
       }
 
       return {

@@ -69,12 +69,12 @@ Here's how to use the MCP once configured:
 2. **Get more results**: Request additional search results
 
    ```
-   Show me 3 more search results
+   Show me 3 more images
    ```
 
 3. **Save an image**: Ask to save a specific result to your project
    ```
-   Save the 3rd result to the "assets" folder
+   Save the 3rd image to the "assets" folder
    ```
 
 The MCP will display the search results as actual images in your chat history, and you can easily save any of them to your local project directory.
@@ -190,5 +190,4 @@ Download and save images from URLs to your local project directory.
 - allow specifying of the output file in the chat
 - configurable logging severity
 - log directory in user profile folder (AppData\Roaming, Library/Application Support) or configurable
-- refactor try/catch to [neverthrow](https://github.com/supermacro/neverthrow)
 - image fetch timeout & retry
