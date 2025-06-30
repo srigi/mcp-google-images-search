@@ -190,5 +190,4 @@ Download and save images from URLs to your local project directory.
 - allow specifying of the output file in the chat
 - configurable logging severity
 - log directory in user profile folder (AppData\Roaming, Library/Application Support) or configurable
-- refactor try/catch to [neverthrow](https://github.com/supermacro/neverthrow)
 - image fetch timeout & retry
