@@ -1,6 +1,8 @@
+import type { Logger } from 'winston';
 import { z } from 'zod';
 
 import { env } from '~/env.js';
+import { tryCatch } from '~/utils/tryCatch.js';
 
 export interface SearchOptions {
   query: string;
@@ -13,7 +15,6 @@ export interface SearchResult {
   items: SearchItem[];
   previousPageIdx?: number;
   nextPageIdx?: number;
-  totalResults: number;
   searchTerms: string;
 }
 
@@ -35,22 +36,19 @@ interface SearchItem {
 }
 
 const GoogleSearchResponseSchema = z.object({
-  kind: z.string(),
   queries: z.object({
     previousPage: z
       .array(
         z.object({
-          totalResults: z.string(),
           searchTerms: z.string(),
           count: z.number(),
-          startIndex: z.number(),
+          startIndex: z.number().optional(),
           safe: z.string(),
         }),
       )
       .optional(),
     request: z.array(
       z.object({
-        totalResults: z.string(),
         searchTerms: z.string(),
         count: z.number(),
         startIndex: z.number(),
@@ -60,7 +58,6 @@ const GoogleSearchResponseSchema = z.object({
     nextPage: z
       .array(
         z.object({
-          totalResults: z.string(),
           searchTerms: z.string(),
           count: z.number(),
           startIndex: z.number(),
@@ -103,7 +100,7 @@ export class GoogleSearchError extends Error {
 /**
  * Builds the Google Custom Search API URL with the provided search options
  */
-export function buildSearchUrl({ query, count, startIndex, safe }: SearchOptions): string {
+export function buildSearchUrl({ count, query, safe, startIndex }: SearchOptions): string {
   const url = new URL('https://www.googleapis.com/customsearch/v1');
   url.searchParams.append('cx', env.SEARCH_ENGINE_ID);
   url.searchParams.append('key', env.API_KEY);
@@ -115,42 +112,45 @@ export function buildSearchUrl({ query, count, startIndex, safe }: SearchOptions
     url.searchParams.append('safe', safe);
   }
   if (startIndex != null) {
-    url.searchParams.append('startIndex', startIndex.toString());
+    url.searchParams.append('start', startIndex.toString());
   }
 
   return url.toString();
 }
 
-/**
- * Performs a Google Custom Search API request for images
- */
-export async function searchImages({ query, count = 2, startIndex = 1, safe = 'off' }: SearchOptions): Promise<SearchResult> {
-  const url = buildSearchUrl({ query, count, startIndex, safe });
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new GoogleSearchError(`Google Search API request failed: ${response.statusText}`, response.status, response.statusText);
-  }
-
-  const data = await response.json();
-  let validatedData;
-
-  try {
-    validatedData = GoogleSearchResponseSchema.parse(data);
-  } catch (err) {
-    throw new GoogleSearchError(`Invalid response format from Google Search API: ${err instanceof Error ? err.message : 'Unknown error'}`);
-  }
-
-  // extract pagination information
-  const requestQuery = validatedData.queries.request[0];
-  const previousPageIdx = validatedData.queries.previousPage?.[0]?.startIndex;
-  const nextPageIdx = validatedData.queries.nextPage?.[0]?.startIndex;
-
+export function getUtils(logger: Logger) {
   return {
-    items: validatedData.items || [],
-    previousPageIdx,
-    nextPageIdx,
-    totalResults: parseInt(requestQuery.totalResults, 10),
-    searchTerms: requestQuery.searchTerms,
+    /**
+     * Performs a Google Images search API request
+     */
+    async searchImages({ count = 2, query, safe = 'off', startIndex }: SearchOptions): Promise<SearchResult> {
+      const url = buildSearchUrl({ query, count, safe, startIndex });
+      logger.info('[search_image] utils/searchImages() called', { count, query, safe, startIndex, url });
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new GoogleSearchError(`Google Search API request failed: ${response.statusText}`, response.status, response.statusText);
+      }
+
+      const data = await response.json();
+      logger.info('[search_image] utils/searchImages() data', { data });
+
+      const [validationErr, validatedData] = tryCatch(() => GoogleSearchResponseSchema.parse(data));
+      if (validationErr != null) {
+        throw new GoogleSearchError(`Invalid response format from Google Search API: ${validationErr.message}`);
+      }
+
+      // extract pagination information
+      const requestQuery = validatedData.queries.request[0];
+      const previousPageIdx = validatedData.queries.previousPage?.[0]?.startIndex;
+      const nextPageIdx = validatedData.queries.nextPage?.[0]?.startIndex;
+
+      return {
+        items: validatedData.items || [],
+        previousPageIdx,
+        nextPageIdx,
+        searchTerms: requestQuery.searchTerms,
+      };
+    },
   };
 }

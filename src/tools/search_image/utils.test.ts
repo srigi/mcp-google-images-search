@@ -30,7 +30,7 @@ describe('search_image/utils', () => {
       const startIndex = 11;
       const searchQueryURL = buildSearchUrl({ query, count: 2, startIndex });
 
-      expect(searchQueryURL).toContain(`startIndex=${startIndex}`);
+      expect(searchQueryURL).toContain(`start=${startIndex}`);
     });
 
     it('should correctly handle custom safe parameter', () => {
@@ -63,7 +63,7 @@ describe('search_image/utils', () => {
       expect(searchQueryURL).toContain(`num=${count}`);
       expect(searchQueryURL).toContain(`safe=${safe}`);
       expect(searchQueryURL).toContain('searchType=image');
-      expect(searchQueryURL).toContain(`startIndex=${startIndex}`);
+      expect(searchQueryURL).toContain(`start=${startIndex}`);
     });
 
     it('should handle edge case values for count and startIndex', () => {
@@ -72,7 +72,7 @@ describe('search_image/utils', () => {
       // Test minimum values
       const minValuesURL = buildSearchUrl({ query, count: 1, startIndex: 1 });
       expect(minValuesURL).toContain('num=1');
-      expect(minValuesURL).toContain('startIndex=1');
+      expect(minValuesURL).toContain('start=1');
 
       // Test maximum count value (as per schema, max is 10)
       const maxCountURL = buildSearchUrl({ query, count: 10 });
@@ -80,7 +80,7 @@ describe('search_image/utils', () => {
 
       // Test larger startIndex for pagination
       const largeStartIndexURL = buildSearchUrl({ query, count: 2, startIndex: 91 });
-      expect(largeStartIndexURL).toContain('startIndex=91');
+      expect(largeStartIndexURL).toContain('start=91');
     });
   });
 });
