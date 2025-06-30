@@ -7,16 +7,14 @@ describe('search_image/utils', () => {
   describe('buildSearchUrl', () => {
     it('should correctly build search query URL with default parameters', () => {
       const query = 'MCP diagram';
-      const searchQueryURL = buildSearchUrl({ query });
+      const searchQueryURL = buildSearchUrl({ query, count: 4 });
 
       expect(searchQueryURL).toContain('https://www.googleapis.com/customsearch/v1');
       expect(searchQueryURL).toContain(`cx=${env.SEARCH_ENGINE_ID}`);
       expect(searchQueryURL).toContain(`key=${env.API_KEY}`);
       expect(searchQueryURL).toContain('q=MCP+diagram');
       expect(searchQueryURL).toContain('num=4');
-      expect(searchQueryURL).toContain('safe=off');
       expect(searchQueryURL).toContain('searchType=image');
-      expect(searchQueryURL).toContain('startIndex=1');
     });
 
     it('should correctly handle custom count parameter', () => {
@@ -30,7 +28,7 @@ describe('search_image/utils', () => {
     it('should correctly handle custom startIndex parameter', () => {
       const query = 'test query';
       const startIndex = 11;
-      const searchQueryURL = buildSearchUrl({ query, startIndex });
+      const searchQueryURL = buildSearchUrl({ query, count: 2, startIndex });
 
       expect(searchQueryURL).toContain(`startIndex=${startIndex}`);
     });
@@ -39,15 +37,15 @@ describe('search_image/utils', () => {
       const query = 'test query';
 
       // Test 'medium' safe setting
-      const mediumSafeURL = buildSearchUrl({ query, safe: 'medium' });
+      const mediumSafeURL = buildSearchUrl({ query, count: 2, safe: 'medium' });
       expect(mediumSafeURL).toContain('safe=medium');
 
       // Test 'high' safe setting
-      const highSafeURL = buildSearchUrl({ query, safe: 'high' });
+      const highSafeURL = buildSearchUrl({ query, count: 2, safe: 'high' });
       expect(highSafeURL).toContain('safe=high');
 
       // Test 'off' safe setting (explicit)
-      const offSafeURL = buildSearchUrl({ query, safe: 'off' });
+      const offSafeURL = buildSearchUrl({ query, count: 2, safe: 'off' });
       expect(offSafeURL).toContain('safe=off');
     });
 
@@ -81,7 +79,7 @@ describe('search_image/utils', () => {
       expect(maxCountURL).toContain('num=10');
 
       // Test larger startIndex for pagination
-      const largeStartIndexURL = buildSearchUrl({ query, startIndex: 91 });
+      const largeStartIndexURL = buildSearchUrl({ query, count: 2, startIndex: 91 });
       expect(largeStartIndexURL).toContain('startIndex=91');
     });
   });

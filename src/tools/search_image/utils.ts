@@ -4,7 +4,7 @@ import { env } from '~/env.js';
 
 export interface SearchOptions {
   query: string;
-  count?: number;
+  count: number;
   startIndex?: number;
   safe?: 'off' | 'medium' | 'high';
 }
@@ -103,15 +103,20 @@ export class GoogleSearchError extends Error {
 /**
  * Builds the Google Custom Search API URL with the provided search options
  */
-export function buildSearchUrl({ query, count = 4, startIndex = 1, safe = 'off' }: SearchOptions): string {
+export function buildSearchUrl({ query, count, startIndex, safe }: SearchOptions): string {
   const url = new URL('https://www.googleapis.com/customsearch/v1');
   url.searchParams.append('cx', env.SEARCH_ENGINE_ID);
   url.searchParams.append('key', env.API_KEY);
   url.searchParams.append('num', count.toString());
   url.searchParams.append('q', query);
-  url.searchParams.append('safe', safe);
   url.searchParams.append('searchType', 'image');
-  url.searchParams.append('startIndex', startIndex.toString());
+
+  if (safe != null) {
+    url.searchParams.append('safe', safe);
+  }
+  if (startIndex != null) {
+    url.searchParams.append('startIndex', startIndex.toString());
+  }
 
   return url.toString();
 }
