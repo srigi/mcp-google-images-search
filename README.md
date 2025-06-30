@@ -178,7 +178,7 @@ Download and save images from URLs to your local project directory.
 
 ## TODO
 
-- add indexes to the results
+- add example usage screencast
 - open GH issue for image support in the chat history:
   - Augment
   - Claude (desktop)
