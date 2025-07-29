@@ -121,39 +121,35 @@ import { getLogger } from '~/logger';
 
 const logger = () => getLogger('[🛠️ search_image/utils]');
 
-export function getUtils() {
+/**
+ * Performs a Google Images search API request
+ */
+export async function searchImages({ count = 2, query, safe = 'off', startIndex }: SearchOptions): Promise<SearchResult> {
+  const url = buildSearchUrl({ query, count, safe, startIndex });
+  logger().info('searchImages() called', { count, query, safe, startIndex, url });
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new GoogleSearchError(`Google Search API request failed: ${response.statusText}`, response.status, response.statusText);
+  }
+
+  const data = await response.json();
+  logger().info('searchImages() response data', { data });
+
+  const [validationErr, validatedData] = tryCatch(() => GoogleSearchResponseSchema.parse(data));
+  if (validationErr != null) {
+    throw new GoogleSearchError(`Invalid response format from Google Search API: ${validationErr.message}`);
+  }
+
+  // extract pagination information
+  const requestQuery = validatedData.queries.request[0];
+  const previousPageIdx = validatedData.queries.previousPage?.[0]?.startIndex;
+  const nextPageIdx = validatedData.queries.nextPage?.[0]?.startIndex;
+
   return {
-    /**
-     * Performs a Google Images search API request
-     */
-    async searchImages({ count = 2, query, safe = 'off', startIndex }: SearchOptions): Promise<SearchResult> {
-      const url = buildSearchUrl({ query, count, safe, startIndex });
-      logger().info('searchImages() called', { count, query, safe, startIndex, url });
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new GoogleSearchError(`Google Search API request failed: ${response.statusText}`, response.status, response.statusText);
-      }
-
-      const data = await response.json();
-      logger().info('searchImages() response data', { data });
-
-      const [validationErr, validatedData] = tryCatch(() => GoogleSearchResponseSchema.parse(data));
-      if (validationErr != null) {
-        throw new GoogleSearchError(`Invalid response format from Google Search API: ${validationErr.message}`);
-      }
-
-      // extract pagination information
-      const requestQuery = validatedData.queries.request[0];
-      const previousPageIdx = validatedData.queries.previousPage?.[0]?.startIndex;
-      const nextPageIdx = validatedData.queries.nextPage?.[0]?.startIndex;
-
-      return {
-        items: validatedData.items || [],
-        previousPageIdx,
-        nextPageIdx,
-        searchTerms: requestQuery.searchTerms,
-      };
-    },
+    items: validatedData.items || [],
+    previousPageIdx,
+    nextPageIdx,
+    searchTerms: requestQuery.searchTerms,
   };
 }

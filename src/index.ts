@@ -4,8 +4,8 @@ import { resolve } from 'node:path';
 import winston, { transports } from 'winston';
 
 import { version } from '../package.json';
-import { schema as searchImageSchema, getHandler as getSearchImageHandler } from '~/tools/search_image';
-import { schema as persistImageSchema, getHandler as getPersistImageHandler } from '~/tools/persist_image';
+import { schema as searchImageSchema, handler as searchImageHandler } from '~/tools/search_image';
+import { schema as persistImageSchema, handler as persistImageHandler } from '~/tools/persist_image';
 import { createLogger } from '~/logger';
 
 const logger = createLogger({
@@ -16,12 +16,12 @@ const logger = createLogger({
 });
 const server = new McpServer({ name: 'Google images search', version });
 
-server.tool('search_image', 'Search the image(s) online', searchImageSchema, getSearchImageHandler());
+server.tool('search_image', 'Search the image(s) online', searchImageSchema, searchImageHandler);
 server.tool(
   'persist_image',
   'Store image at URL to folder relative to current workspace. If targetPath does not exist, the tool will create it automatically.',
   persistImageSchema,
-  getPersistImageHandler(),
+  persistImageHandler,
 );
 
 server.connect(new StdioServerTransport()).then(() => logger.info('server connected'));
