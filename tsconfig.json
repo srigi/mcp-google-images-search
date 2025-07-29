@@ -13,8 +13,8 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "es2024"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["my_resources", "node_modules", "src/**/*.test.ts"]
+  "exclude": ["dist", "my_resources", "node_modules", "src/**/*.test.ts"]
 }
