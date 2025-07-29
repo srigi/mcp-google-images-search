@@ -2,7 +2,7 @@
   "name": "@srigi/mcp-google-images-search",
   "description": "MCP server for searching images with Google",
   "license": "MIT",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "bugs": {
     "url": "https://github.com/srigi/mcp-google-images-search/issues"
   },
