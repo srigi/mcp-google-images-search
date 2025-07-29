@@ -1,4 +1,3 @@
-import type { Logger } from 'winston';
 import { z } from 'zod';
 
 import { env } from '~/env.js';
@@ -118,14 +117,18 @@ export function buildSearchUrl({ count, query, safe, startIndex }: SearchOptions
   return url.toString();
 }
 
-export function getUtils(logger: Logger) {
+import { getLogger } from '~/logger';
+
+const logger = () => getLogger('[🛠️ search_image/utils]');
+
+export function getUtils() {
   return {
     /**
      * Performs a Google Images search API request
      */
     async searchImages({ count = 2, query, safe = 'off', startIndex }: SearchOptions): Promise<SearchResult> {
       const url = buildSearchUrl({ query, count, safe, startIndex });
-      logger.info('[search_image] utils/searchImages() called', { count, query, safe, startIndex, url });
+      logger().info('searchImages() called', { count, query, safe, startIndex, url });
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -133,7 +136,7 @@ export function getUtils(logger: Logger) {
       }
 
       const data = await response.json();
-      logger.info('[search_image] utils/searchImages() data', { data });
+      logger().info('searchImages() response data', { data });
 
       const [validationErr, validatedData] = tryCatch(() => GoogleSearchResponseSchema.parse(data));
       if (validationErr != null) {

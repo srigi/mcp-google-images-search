@@ -1,9 +1,9 @@
 import type { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { Logger } from 'winston';
 import { z } from 'zod';
 
 import { GoogleSearchError, SearchResult, getUtils } from './utils.js';
 import { tryCatch } from '~/utils/tryCatch.js';
+import { getLogger } from '~/logger';
 
 export const schema = {
   count: z.number().min(1).max(10).optional().describe('Number of results to return (1-10, default: 2)'),
@@ -12,11 +12,13 @@ export const schema = {
   startIndex: z.number().min(1).optional().describe('Starting index of next search result page (not needed for initial search request)'),
 } as const;
 
-export function getHandler(logger: Logger) {
-  const { searchImages } = getUtils(logger);
+const logger = () => getLogger('[🛠️ search_image]');
+
+export function getHandler() {
+  const { searchImages } = getUtils();
 
   const handler: ToolCallback<typeof schema> = async ({ count = 2, query, safe = 'off', startIndex }) => {
-    logger.info('[search_image] handler called', { count, query, safe, startIndex });
+    logger().info('handler called', { count, query, safe, startIndex });
 
     const [err, res] = await tryCatch<GoogleSearchError, SearchResult>(searchImages({ count, query, safe, startIndex }));
     if (err != null) {
@@ -70,7 +72,7 @@ export function getHandler(logger: Logger) {
         },
       })),
     };
-    logger.info('[search_image] handler ret', { _meta, result });
+    logger().info('handler success', { _meta, result });
 
     return {
       _meta,

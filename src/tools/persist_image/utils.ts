@@ -1,9 +1,9 @@
 import { createWriteStream, promises as fs } from 'node:fs';
 import { basename, extname, resolve } from 'node:path';
 import { pipeline } from 'node:stream/promises';
-import type { Logger } from 'winston';
 
 import { tryCatch } from '~/utils/tryCatch.js';
+import { getLogger } from '~/logger';
 
 const ALLOWED_IMAGE_TYPES = new Set([
   'image/jpeg',
@@ -73,10 +73,12 @@ function getFilename(url: string, mimeType: string): string {
   return `${basename(urlFilename, urlExtension)}${finalExt}`;
 }
 
-export function getUtils(logger: Logger) {
+const logger = () => getLogger('[🛠️ persist_image/utils]');
+
+export function getUtils() {
   return {
     async prepareTargetPath(workspacePath: string, targetPath: string): Promise<string> {
-      logger.info('[persist_image] utils/prepareTargetPath()', { workspacePath, targetPath });
+      logger().info('prepareTargetPath()', { workspacePath, targetPath });
 
       // validates that the target path is within project bounds, and returns the full path of the directory where the file should be saved
       if (targetPath.startsWith('..')) {
@@ -85,18 +87,18 @@ export function getUtils(logger: Logger) {
 
       const fullTargetPath = resolve(workspacePath, targetPath);
       const [fsAccessErr] = await tryCatch(fs.access(fullTargetPath));
-      logger.info('[persist_image] utils/prepareTargetPath() resolve & fs.access', { fullTargetPath, fsAccessErr });
+      logger().info('prepareTargetPath() resolve & fs.access', { fullTargetPath, fsAccessErr });
 
       if (fsAccessErr == null) {
-        logger.info('[persist_image] utils/prepareTargetPath() ret A');
+        logger().info('prepareTargetPath() existing directory found');
         return fullTargetPath;
       }
 
       const [fsMkdirErr] = await tryCatch(fs.mkdir(fullTargetPath, { recursive: true }));
-      logger.info('[persist_image] utils/prepareTargetPath() fs.mkdir', { fsMkdirErr });
+      logger().info('prepareTargetPath() fs.mkdir', { fsMkdirErr });
 
       if (fsMkdirErr == null) {
-        logger.info('[persist_image] utils/prepareTargetPath() ret B');
+        logger().info('prepareTargetPath() directory created successfully');
         return fullTargetPath;
       }
 
@@ -104,10 +106,10 @@ export function getUtils(logger: Logger) {
     },
 
     async fetchImage(url: string, fullTargetPath: string): Promise<FetchResult> {
-      logger.info('[persist_image] utils/fetchImage()', { url, fullTargetPath });
+      logger().info('fetchImage()', { url, fullTargetPath });
 
       const [fetchErr, response] = await tryCatch(fetch(url, { headers: { 'User-Agent': USER_AGENT } }));
-      logger.info('[persist_image] utils/fetchImage() response', { fetchErr, response });
+      logger().info('fetchImage() response', { fetchErr, response });
 
       if (fetchErr != null) {
         throw new PersistImageError(`Failed to fetch image: ${fetchErr.message}`, 'FETCH_FAILED');
@@ -127,17 +129,17 @@ export function getUtils(logger: Logger) {
       const fileName = getFilename(url, contentType);
       const filePersistPath = resolve(fullTargetPath, fileName);
       const writeStream = createWriteStream(filePersistPath);
-      logger.info('[persist_image] utils/fetchImage() fileName', { fileName, filePersistPath, writeStream });
+      logger().info('fetchImage() fileName', { fileName, filePersistPath, writeStream });
 
       const [pipelineErr] = await tryCatch(pipeline(response.body, writeStream));
-      logger.info('[persist_image] utils/fetchImage() pipeline', { pipelineErr });
+      logger().info('fetchImage() pipeline', { pipelineErr });
 
       if (pipelineErr != null) {
         throw new PersistImageError(`Failed to save file: ${pipelineErr.message}`, 'SAVE_FAILED');
       }
 
       const [fsStatErr, fileStats] = await tryCatch(fs.stat(filePersistPath));
-      logger.info('[persist_image] utils/fetchImage() fs.stat', { fsStatErr, fileStats });
+      logger().info('fetchImage() fs.stat', { fsStatErr, fileStats });
       if (fsStatErr != null) {
         throw new PersistImageError(`Failed to get file stats: ${fsStatErr.message}`, 'STAT_FAILED');
       }

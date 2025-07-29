@@ -1,10 +1,10 @@
 import type { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { relative } from 'node:path';
-import type { Logger } from 'winston';
 import { z } from 'zod';
 
 import { FetchResult, PersistImageError, getUtils } from './utils.js';
 import { tryCatch } from '~/utils/tryCatch.js';
+import { getLogger } from '~/logger';
 
 export const schema = {
   url: z.string().url().describe('URL of the image'),
@@ -12,15 +12,17 @@ export const schema = {
   workspacePath: z.string().describe('The current workspace absolute path'),
 } as const;
 
-export function getHandler(logger: Logger) {
-  const { fetchImage, prepareTargetPath } = getUtils(logger);
+const logger = () => getLogger('[🛠️ persist_image]');
+
+export function getHandler() {
+  const { fetchImage, prepareTargetPath } = getUtils();
 
   const handler: ToolCallback<typeof schema> = async ({ url, targetPath, workspacePath }) => {
-    logger.info('[persist_image] handler called', { url, targetPath, workspacePath });
+    logger().info('handler called', { url, targetPath, workspacePath });
 
     const [prepareTargetPathErr, fullTargetPath] = await tryCatch<PersistImageError, string>(prepareTargetPath(workspacePath, targetPath));
     if (prepareTargetPathErr != null) {
-      logger.error('persist_image() error', { error: prepareTargetPathErr });
+      logger().error('prepareTargetPath error', { error: prepareTargetPathErr });
 
       return {
         _meta: {
@@ -41,7 +43,7 @@ export function getHandler(logger: Logger) {
 
     const [fetchImageErr, fetchResult] = await tryCatch<PersistImageError, FetchResult>(fetchImage(url, fullTargetPath));
     if (fetchImageErr != null) {
-      logger.error('persist_image() error', { error: fetchImageErr });
+      logger().error('fetchImage error', { error: fetchImageErr });
 
       return {
         _meta: {
@@ -66,7 +68,7 @@ export function getHandler(logger: Logger) {
       size: fetchResult.size,
       mimeType: fetchResult.mimeType,
     };
-    logger.info('persist_image() success', { fetchResult, _meta });
+    logger().info('handler success', { fetchResult, _meta });
 
     return {
       _meta,
