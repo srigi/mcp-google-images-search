@@ -1,8 +1,12 @@
-# Google Images Search MCP
+# 🖼️ Google Images Search MCP
 
-Query for Google images from your editor/IDE and view search results as visual previews in your conversation. Then download and persist the selected image(s) to your local project.
+![logo](https://i.postimg.cc/sgpqkgtR/PM.webp)
 
-**The unique feature** of this MCP is that it displays search results directly in the chat history as actual images, not just text descriptions or links. This visual integration currently works with [**Cline**](https://cline.bot/) and [**Windsurf**](https://windsurf.com/editor) only.
+> **Search. See. Save.** – The only MCP that shows Google Images results directly in your chat as actual images, not just links!
+
+Unlike other tools that return text descriptions or links, this MCP displays search results as actual images in your conversation. Works with [**Cline**](https://cline.bot/) and [**Windsurf**](https://windsurf.com/editor).
+
+Perfect for getting visual inspiration, finding assets for projects, or quickly browsing images without leaving your IDE.
 
 ## Usage & Requirements
 
@@ -14,9 +18,9 @@ Query for Google images from your editor/IDE and view search results as visual p
 
 ### Setup Guide
 
-Follow these steps to set up your Google Images Search MCP:
+Follow these steps to set up this MCP:
 
-#### Step 1: Create Google Custom search engine
+#### Step 1: create Google Custom search engine
 
 1. Go to [Google Programmable Search Engine](https://programmablesearchengine.google.com/controlpanel/all)
 2. Click **"Add"** to create a new search engine
@@ -63,13 +67,13 @@ Here's how to use the MCP once configured:
 1. **Search for images**: Ask your AI assistant to search for images
 
    ```
-   Search for image of F-22 in-air
+   Find 5 images of F-22
    ```
 
 2. **Get more results**: Request additional search results
 
    ```
-   Show me 3 more images
+   Find 5 more images
    ```
 
 3. **Save an image**: Ask to save a specific result to your project
@@ -79,49 +83,24 @@ Here's how to use the MCP once configured:
 
 The MCP will display the search results as actual images in your chat history, and you can easily save any of them to your local project directory.
 
-## Development & Dev-Requirements
+## 🚀 Development
 
-Feel free to join development of this MCP. Quality contribution is welcomed.
+Want to contribute? Great! Quality contributions are welcomed.
 
-### Development requirements
+**Requirements**: Node.js v20+, [direnv](https://direnv.net/), PNPM v10
 
-- Node.js v20+
-- [direnv](https://direnv.net/#getting-started)
-- PNPM v10
+**Quick start**:
 
-### Development setup
-
-For development, you need to start the dev build and use a different MCP configuration that points to the continuously recompiled source files:
-
-#### Step 1: Configure Environment
-
-1. Copy [`.envrc (example)`](<.envrc%20(example)>) to `.envrc`
-2. Fill in your `API_KEY` and `SEARCH_ENGINE_ID` in `.envrc`
-
-#### Step 2: Install Dependencies
-
-```bash
-pnpm install
-```
-
-#### Step 3: Start Development Mode
-
-```bash
-pnpm dev
-```
-
-This starts TypeScript compiler in watch mode, continuously recompiling changes.
-
-#### Step 4: Configure IDE for Development
-
-Use this MCP configuration for development (replace the path with your actual project path):
+1. Copy `.envrc (example)` to `.envrc` and add your Google API credentials
+2. Run `pnpm install && pnpm dev`
+3. Update your MCP configuration for development:
 
 ```json
 {
   "mcpServers": {
     "googleImagesSearch": {
       "command": "node",
-      "args": ["/absolute/path/to/project/src/index.js"],
+      "args": ["/absolute/path/to/project/src/index.js", "--debug", "--pretty-print"],
       "env": {
         "API_KEY": "your-google-api-key-here",
         "SEARCH_ENGINE_ID": "your-search-engine-id-here"
@@ -132,62 +111,31 @@ Use this MCP configuration for development (replace the path with your actual pr
 }
 ```
 
-#### Development Tools
+**Debug options**:
 
-For debugging and testing, you can start the MCP inspector:
+- `--debug` - Enable detailed logging for troubleshooting
+- `--pretty-print` - Format JSON responses for better readability
 
-```bash
-pnpx @modelcontextprotocol/inspector
-```
+Changes auto-recompile, but restart your MCP server to apply them. Check `logs/info.log` for debugging.
 
-Open the inspector URL that includes the `MCP_PROXY_AUTH_TOKEN` (reported on the terminal). In the inspector's UI fill the same **Command:** and **Arguments:** as in above MCP configuration, then click "▷ Connect". Finally click "List Tools" to see the MPC's tools, and invoke them with desired arguments.
+Use `pnpm dev:inspector` for interactive testing in the browser.
 
-Check the [log file](logs/info.log) for debugging information.
+## 🛠️ Available Tools
 
-_Note: When you make changes to the source code, the dev build will automatically recompile, but you may need to restart the MCP server in your IDE to apply the changes._
+**🔍 search_image** - Find images using Google's vast database
 
-## Available Tools
+- `query` (required) - What you're looking for
+- `count` (1-10, default: 2) - How many results
+- `safe` ('off'/'medium'/'high') - Filter level
+- `startIndex` - For pagination
 
-### [search_image](src/tools/search_image/README.md)
+**💾 persist_image** - Download and save images to your project
 
-Search for images using Google Custom Search API.
+- `url` (required) - Image URL to download
+- `targetPath` (required) - Where to save it (folder or full path)
 
-**Parameters:**
+**Security features**: Path validation, MIME type checking, 10MB size limit, supports all major image formats (JPEG, PNG, GIF, WebP, SVG, etc.)
 
-- `query` (string, required): Search query for images
-- `count` (number, optional): Number of results to return (1-10, default: 2)
-- `safe` (string, optional): Safe search setting - 'off', 'medium', 'high' (default: 'off')
-- `startIndex` (number, optional): Starting index for pagination (default: 1)
+---
 
-### [persist_image](src/tools/persist_image/README.md)
-
-Download and save images from URLs to your local project directory.
-
-**Parameters:**
-
-- `link` (string, required): URL to the full-quality image
-- `path` (string, required): Relative path where to save the image (can be folder or folder/filename.ext)
-
-**Features:**
-
-- Automatic file extension detection from MIME type
-- Directory creation if needed
-- Security validation (prevents directory traversal)
-- Content type validation (images only)
-- Supports JPEG, PNG, GIF, WebP, SVG, BMP, TIFF, AVIF
-
-## TODO
-
-- add example usage screencast
-- open GH issue for image support in the chat history:
-  - Augment
-  - Claude (desktop)
-  - Copilot
-  - Cursor
-  - RooCode
-  - Zed
-
-- allow specifying of the output file in the chat
-- configurable logging severity
-- log directory in user profile folder (AppData\Roaming, Library/Application Support) or configurable
-- image fetch timeout & retry
+**🔗 Links**: [GitHub](https://github.com/srigi/mcp-google-images-search) • [NPM](https://www.npmjs.com/package/@srigi/mcp-google-images-search) • [Issues](https://github.com/srigi/mcp-google-images-search/issues)
