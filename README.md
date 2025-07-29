@@ -1,12 +1,16 @@
 # 🖼️ Google Images Search MCP
 
-![logo](https://i.postimg.cc/sgpqkgtR/PM.webp)
+<img src="https://i.postimg.cc/sgpqkgtR/PM.webp" alt="logo" width="50%">
 
 > **Search. See. Save.** – The only MCP that shows Google Images results directly in your chat as actual images, not just links!
 
 Unlike other tools that return text descriptions or links, this MCP displays search results as actual images in your conversation. Works with [**Cline**](https://cline.bot/) and [**Windsurf**](https://windsurf.com/editor).
 
 Perfect for getting visual inspiration, finding assets for projects, or quickly browsing images without leaving your IDE.
+
+## Demo
+
+![Demo](https://i.postimg.cc/HnKtdPXf/Untitled.gif)
 
 ## Usage & Requirements
 
