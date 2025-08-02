@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { FetchResult, PersistImageError, fetchImage, prepareTargetPath } from './utils.js';
 import { tryCatch } from '~/utils/tryCatch.js';
-import { getLogger } from '~/logger';
+import { getLogger } from '~/utils/logger';
 
 export const schema = {
   url: z.string().url().describe('URL of the image'),

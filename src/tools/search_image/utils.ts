@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { env } from '~/env.js';
+import { env } from '~/utils/env';
+import { getLogger } from '~/utils/logger';
 import { tryCatch } from '~/utils/tryCatch.js';
 
 export interface SearchOptions {
@@ -34,7 +35,19 @@ interface SearchItem {
   };
 }
 
-const GoogleSearchResponseSchema = z.object({
+export class GoogleSearchError extends Error {
+  constructor(
+    message: string,
+    public status?: number,
+    public statusText?: string,
+  ) {
+    super(message);
+    this.name = 'GoogleSearchError';
+  }
+}
+
+const logger = () => getLogger('[🛠️ search_image/utils]');
+const googleSearchResponseSchema = z.object({
   queries: z.object({
     previousPage: z
       .array(
@@ -85,17 +98,6 @@ const GoogleSearchResponseSchema = z.object({
   ),
 });
 
-export class GoogleSearchError extends Error {
-  constructor(
-    message: string,
-    public status?: number,
-    public statusText?: string,
-  ) {
-    super(message);
-    this.name = 'GoogleSearchError';
-  }
-}
-
 /**
  * Builds the Google Custom Search API URL with the provided search options
  */
@@ -117,10 +119,6 @@ export function buildSearchUrl({ count, query, safe, startIndex }: SearchOptions
   return url.toString();
 }
 
-import { getLogger } from '~/logger';
-
-const logger = () => getLogger('[🛠️ search_image/utils]');
-
 /**
  * Performs a Google Images search API request
  */
@@ -136,7 +134,7 @@ export async function searchImages({ count = 2, query, safe = 'off', startIndex 
   const data = await response.json();
   logger().info('searchImages() response data', { data });
 
-  const [validationErr, validatedData] = tryCatch(() => GoogleSearchResponseSchema.parse(data));
+  const [validationErr, validatedData] = tryCatch(() => googleSearchResponseSchema.parse(data));
   if (validationErr != null) {
     throw new GoogleSearchError(`Invalid response format from Google Search API: ${validationErr.message}`);
   }

@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 import { version } from '../package.json';
-import { createLogger } from '~/logger';
+import { createLogger } from '~/utils/logger';
 import { parseDebugArgs } from '~/utils/cli/parseDebugArgs';
 import { tryCatch } from '~/utils/tryCatch';
 import { schema as searchImageSchema, handler as searchImageHandler } from '~/tools/search_image';

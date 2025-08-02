@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { env } from '~/env.js';
+import { env } from '~/utils/env';
 import { buildSearchUrl } from './utils';
 
 describe('search_image/utils', () => {

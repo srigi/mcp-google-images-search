@@ -3,7 +3,7 @@ import { basename, extname, resolve } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 
 import { tryCatch } from '~/utils/tryCatch.js';
-import { getLogger } from '~/logger';
+import { getLogger } from '~/utils/logger';
 
 const ALLOWED_IMAGE_TYPES = new Set([
   'image/jpeg',
