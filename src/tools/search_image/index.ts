@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { GoogleSearchError, SearchResult, searchImages } from './utils.js';
 import { tryCatch } from '~/utils/tryCatch.js';
-import { getLogger } from '~/logger';
+import { getLogger } from '~/utils/logger';
 
 export const schema = {
   count: z.number().min(1).max(10).optional().describe('Number of results to return (1-10, default: 2)'),

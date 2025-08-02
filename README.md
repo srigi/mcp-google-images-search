@@ -115,12 +115,18 @@ Want to contribute? Great! Quality contributions are welcomed.
 }
 ```
 
-**Debug options**:
+**Debug and logging options**:
 
-- `--debug` - Enable detailed logging for troubleshooting
-- `--pretty-print` - Format JSON responses for better readability
+- No `--debug` flag provided - logging is disabled
+- `--debug` without argument - enable logging into `debug.log` in current working directory the running MCP
+- `--debug /absolute/path/to/debug.log` - enable logging and write logs to the specified absolute path
+- `--pretty-print` - Format logs for better readability (formatted JSON output)
 
-Changes auto-recompile, but restart your MCP server to apply them. Check `logs/info.log` for debugging.
+_note: only absolute path is allowed when providing a path to `--debug`. Relative paths will cause the server to exit with an error!_
+
+**Writing TypeScript code**:
+
+The `pnpm dev` auto-recompile all changes to `.ts` files. But you must reload your MCP server manually for changes to be reflected in your IDE.
 
 Use `pnpm dev:inspector` for interactive testing in the browser.
 
