@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
     "lib": ["ES2024"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
